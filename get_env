@@ -1,0 +1,13 @@
+#!/usr/bin/env php
+<?php
+
+require '/home/deploy/.composer/vendor/autoload.php';
+include dirname(__FILE__) . '/aws_config.php';
+
+$s3 = \Aws\S3\S3Client::factory($configS3);
+$result = $s3->getObject([
+    'Bucket' => $bucket,
+    'Key'    => $key,
+    'SaveAs' => $filepath,
+]);
+

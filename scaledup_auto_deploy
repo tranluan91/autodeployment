@@ -1,0 +1,28 @@
+#!/bin/bash
+exit_failure() {
+  echo "Aborted due to an error: $1"
+  exit 0
+}
+BRANCH=$(get_current_branch)
+SOURCE_CODE_DIR=/usr/share/nginx/your_project
+echo "---> Move to $SOURCE_CODE_DIR";\
+  cd $SOURCE_CODE_DIR || exit_failure "Move to $SOURCE_CODE_DIR";\
+  TIMESTAMP=`date +"%Y%m%d%H%M%S"`;\
+  RELEASE="/usr/share/nginx/your_project/releases/${TIMESTAMP}";\
+  echo "---> Clone the codes from git repo";\
+  git clone "Your_repo" $RELEASE --branch="${BRANCH}" --depth="1" || exit_failure "Clone the codes from git repo";
+  cd $RELEASE || exit_failure "Move to $RELEASE";\
+  echo "---> Install composer";\
+  composer install || exit_failure "Composer install";\
+  echo "---> Install npm";\
+  npm install || exit_failure "Npm install";\
+  echo "---> install bower";\
+  bower install || exit_failure "Bower install";\
+  echo "---> Create environment";\
+  get_env || exit_failure "Get env file from S3";\
+  ln -s /home/deploy/.env.php ${SOURCE_CODE_DIR}/current/.env.php || exit_failure "Create new env";\
+  sh crontab.sh || exit_failure "Run crontab";\
+  ln -s $RELEASE /usr/share/nginx/your_project//current-temp || exit_failure "Create symbolic link from $RELEASE";\
+  mv -Tf /usr/share/nginx/your_project/current-temp /usr/share/nginx/your_project/current || exit_failure "Move symbolic link to current dir";\
+update_ec2_tags || exit_failure "Update tag for this instance"
+echo "---> Deploy done! <---"

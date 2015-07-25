@@ -1,0 +1,27 @@
+#!/usr/bin/env php
+<?php
+
+require '/home/deploy/.composer/vendor/autoload.php';
+include dirname(__FILE__) . '/aws_config.php';
+
+$instanceIps = [];
+$client = \Aws\ElasticLoadBalancing\ElasticLoadBalancingClient::factory($configLoadBalancer);
+$result = $client->describeLoadBalancers(['LoadBalancerNames' => [$loadBalancerName]]);
+if (count($result['LoadBalancerDescriptions']) > 0) {
+    $instanceIds = $result['LoadBalancerDescriptions'][0]['Instances'];
+    if (count($instanceIds) > 0) {
+        $ec2Client = \Aws\Ec2\Ec2Client::factory($configEc2);
+        $instances = $ec2Client->describeInstances(['InstanceIds' => $instanceIds[0]]);
+        foreach ($instances['Reservations'] as $instance) {
+            foreach ($instance['Instances'] as $value) {
+            $instanceIps[] = $value['PublicIpAddress'];                                                                    }
+        }
+    }
+}
+
+$servers = [];
+foreach ($instanceIps as $host) {
+    $instanceDeploy['host'] = $host;
+    echo $host . "\n";
+    $servers[] = $instanceDeploy;
+}

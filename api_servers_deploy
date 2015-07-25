@@ -1,0 +1,16 @@
+#!/bin/bash
+
+exit_failure() {
+  echo "Aborted due to an error: $1"
+  exit 0
+}
+echo "This is a shell script auto deploy"
+SOURCE_CODE_DIR=/home/deploy/your_project
+echo "---> Move to $SOURCE_CODE_DIR";\
+  cd $SOURCE_CODE_DIR || exit_failure "Move to $SOURCE_CODE_DIR";\
+  echo "---> Get current branch need to deploy";\
+  BRANCH=$(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ \1/') || exit_failure "Get current branch";\
+  echo "---> Begin deploy instances on branch $BRANCH";\
+  rocketeer deploy --branch=$BRANCH --on="production" || exit_failure "Run deploy with Rocketeer";\
+  update_elb_tags
+  echo "---> Deploy done! <---"

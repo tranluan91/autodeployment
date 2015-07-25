@@ -1,0 +1,23 @@
+#!/usr/bin/env php
+<?php
+
+require '/home/deploy/.composer/vendor/autoload.php';
+include dirname(__FILE__) . '/aws_config.php';
+
+# Get current instance id from Amazon
+$instanceId = file_get_contents("http://169.254.169.254/latest/meta-data/instance-id");
+# Get current branch after deploy
+$currentBranch = trim(substr(file_get_contents('/usr/share/nginx/your_project/current/.git/HEAD'), 16));
+
+# Create a new AWS Elastic Compute Cloud client using an array of configuration options
+$ec2 = \Aws\Ec2\Ec2Client::factory($configEc2);
+# Create/Update Tags for this instance with key is defined from aws_config.php
+$ec2->createTags([
+    'Resources' => [$instanceId],
+    'Tags' => [
+        [
+            'Key'   => $branchDeploy,
+            'Value' => $currentBranch,
+        ]
+    ],
+]);

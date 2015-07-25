@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php
+
+require '/home/deploy/.composer/vendor/autoload.php';
+include dirname(__FILE__) . '/aws_config.php';
+
+$client = \Aws\ElasticLoadBalancing\ElasticLoadBalancingClient::factory($configLoadBalancer);
+$result = $client->describeTags([
+    'LoadBalancerNames' => [$loadBalancerName],
+]);
+$tags = $result['TagDescriptions'];
+$branch = '';
+if (count($tags)) {
+    foreach ($tags[0]['Tags'] as $tag) {
+        if ($tag['Key'] == $branchDeploy) {
+            $branch = $tag['Value'];
+        }
+    }
+}
+
+echo $branch;

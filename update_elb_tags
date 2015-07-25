@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php
+
+require '/home/deploy/.composer/vendor/autoload.php';
+include dirname(__FILE__) . '/aws_config.php';
+include dirname(__FILE__) . '/get_app_servers_addrs.php';
+
+# Create a new AWS Elastic Load Balancing client using an array of configuration options
+$client = \Aws\ElasticLoadBalancing\ElasticLoadBalancingClient::factory($configLoadBalancer);
+# Get current branch has been deployed from Admin server
+$currentBranch = trim(substr(file_get_contents('/home/deploy/your_project/.git/HEAD'), 16));
+# Create/Update Tags for ELB with key is defined from aws_config.php
+$client->addTags([
+    'LoadBalancerNames' => [$loadBalancerName],
+    'Tags' => [
+        [
+            'Key'   => $branchDeploy,
+            'Value' => $currentBranch,
+        ]
+    ],
+]);
