@@ -25,4 +25,6 @@ echo "---> Move to $SOURCE_CODE_DIR";\
   ln -s $RELEASE /usr/share/nginx/your_project//current-temp || exit_failure "Create symbolic link from $RELEASE";\
   mv -Tf /usr/share/nginx/your_project/current-temp /usr/share/nginx/your_project/current || exit_failure "Move symbolic link to current dir";\
 update_ec2_tags || exit_failure "Update tag for this instance"
+/etc/init.d/php5-fpm restart
+/etc/init.d/nginx restart
 echo "---> Deploy done! <---"
