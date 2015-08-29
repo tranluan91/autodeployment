@@ -11,7 +11,11 @@ if (count($result['LoadBalancerDescriptions']) > 0) {
     $instanceIds = $result['LoadBalancerDescriptions'][0]['Instances'];
     if (count($instanceIds) > 0) {
         $ec2Client = \Aws\Ec2\Ec2Client::factory($configEc2);
-        $instances = $ec2Client->describeInstances(['InstanceIds' => $instanceIds[0]]);
+		$ids = [];
+		foreach ($instanceIds as $instanceId) {
+			$ids[] = $instanceId['InstanceId'];
+		}
+        $instances = $ec2Client->describeInstances(['InstanceIds' => $ids]);
         foreach ($instances['Reservations'] as $instance) {
             foreach ($instance['Instances'] as $value) {
             $instanceIps[] = $value['PublicIpAddress'];                                                                    }
